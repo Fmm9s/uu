@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>وزارة الداخلية - نظام المخالفات</title>
+    <style>
+        :root {
+            --primary-green: #1a5d1a;
+            --secondary-green: #1e8449;
+            --light-green: #e8f5e9;
+            --gradient-green: linear-gradient(135deg, #1a5d1a, #1e8449);
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, rgba(232, 245, 233, 0.8), rgba(200, 230, 201, 0.8));
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--gradient-green);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .search-form, .add-person-form {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px solid var(--secondary-green);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary-green);
+            outline: none;
+        }
+
+        button {
+            background: var(--gradient-green);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .results {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .violations-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .violations-checkbox {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .violations-checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .violations-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* تحسين عرض الواجهة على الهواتف */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px; /* تقليل الحواف */
+            }
+
+            .header {
+                font-size: 1.2em; /* تقليل حجم الخط */
+            }
+
+            /* تحسين حجم المدخلات */
+            input, select, textarea {
+                font-size: 0.9em; /* تقليل حجم الخط */
+            }
+        }
+
+        /* تكبير حقوق النشر */
+        footer {
+            font-size: 1.2em; /* تكبير حجم الخط */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>وزارة الداخلية</h1>
+        <h2>نظام الاستعلام والمخالفات - عسكري</h2>
+    </div>
+
+    <div class="container">
+        <!-- رسالة ترحيبية -->
+        <div class="search-form">
+            <h3>مرحباً بك بموقع المخالفات الخاص بمدينه سايبر ستي</h3>
+        </div>
+
+        <!-- واجهة تحديد نوع المستخدم -->
+        <div id="userTypeSelection" class="search-form">
+            <h3>تحديد نوع المستخدم</h3>
+            <div class="form-group">
+                <select id="userType" onchange="showUserInterface()">
+                    <option value="">اختر نوع المستخدم</option>
+                    <option value="normal">مواطن</option>
+                    <option value="vip">عسكري</option>
+                </select>
+            </div>
+            <button onclick="showRegistrationView()">تسجيل مواطن جديد</button> <!-- زر التسجيل -->
+            <button onclick="showRegisteredCitizens()">عرض المسجلين</button> <!-- زر عرض المسجلين -->
+        </div>
+
+        <!-- واجهة تسجيل المواطن -->
+        <div id="registrationView" class="search-form hidden">
+            <h3>تسجيل مواطن جديد</h3>
+            <div class="form-group">
+                <label>الاسم الكامل:</label>
+                <input type="text" id="newCitizenName" required>
+            </div>
+            <div class="form-group">
+                <label>رقم الهوية:</label>
+                <input type="text" id="newCitizenId" required>
+            </div>
+            <button onclick="registerCitizen()">تسجيل</button>
+            <button onclick="hideRegistrationView()">إلغاء</button>
+        </div>
+
+        <!-- واجهة المواطن - عرض المعلومات فقط -->
+        <div id="citizenView" class="person-details hidden">
+            <div class="person-info">
+                <h3>معلوماتك الشخصية</h3>
+                <p><strong>الاسم:</strong> <span id="citizenName"></span></p>
+                <p><strong>رقم الهوية:</strong> <span id="citizenId"></span></p>
+                <p><strong>تاريخ التسجيل:</strong> <span id="citizenRegDate"></span></p>
+            </div>
+
+            <div class="violations-list">
+                <h4>المخالفات المسجلة:</h4>
+                <ul id="citizenViolations"></ul>
+            </div>
+
+            <div class="notes-section">
+                <h4>ملاحظات:</h4>
+                <p id="citizenNotes"></p>
+            </div>
+        </div>
+
+        <!-- واجهة الشخصية المهمة -->
+        <div id="vipView" class="hidden">
+            <!-- نموذج البحث -->
+            <div class="search-form">
+                <h3>البحث عن شخص</h3>
+                <div class="form-group">
+                    <label>الاسم:</label>
+                    <input type="text" id="searchName">
+                    <label>رقم الهوية:</label>
+                    <input type="text" id="searchId">
+                    <button onclick="searchPerson()">بحث</button>
+                </div>
+            </div>
+
+            <!-- نموذج إضافة المخالفات - يظهر فقط بعد البحث -->
+            <div id="violationsForm" class="violations-form hidden">
+                <h3>إضافة مخالفات</h3>
+                <div class="violations-checkbox">
+                    <label><input type="checkbox" name="violation" value="قطع إشارة"> قطع إشارة</label>
+                    <label><input type="checkbox" name="violation" value="تفحيط"> تفحيط</label>
+                    <label><input type="checkbox" name="violation" value="هروب"> هروب</label>
+                    <label><input type="checkbox" name="violation" value="استعمال السيارة كسلاح"> استعمال السيارة كسلاح</label>
+                    <label><input type="checkbox" name="violation" value="انتحال شخصية مسؤول"> انتحال شخصية مسؤول</label>
+                    <label><input type="checkbox" name="violation" value="استخدام السيارات الحكومية لأغراض خاصة"> استخدام السيارات الحكومية لأغراض خاصة</label>
+                    <label><input type="checkbox" name="violation" value="سرقة المحلات"> سرقة المحلات</label>
+                    <label><input type="checkbox" name="violation" value="استخدام الأسلحة البيضاء بشكل علني"> استخدام الأسلحة البيضاء بشكل علني</label>
+                    <label><input type="checkbox" name="violation" value="اقتحام ممتلكات خاصة"> اقتحام ممتلكات خاصة</label>
+                    <label><input type="checkbox" name="violation" value="إطلاق النار في الأماكن العامة"> إطلاق النار في الأماكن العامة</label>
+                    <label><input type="checkbox" name="violation" value="التعدي على رجال الأمن"> التعدي على رجال الأمن</label>
+                    <label><input type="checkbox" name="violation" value="التجمهر غير مصرح به"> التجمهر غير مصرح به</label>
+                    <label><input type="checkbox" name="violation" value="القيادة بدون ضوء في الليل"> القيادة بدون ضوء في الليل</label>
+                    <label><input type="checkbox" name="violation" value="الاعتداء الجسدي"> الاعتداء الجسدي</label>
+                    <label><input type="checkbox" name="violation" value="عدم الالتزام بمسار غير محدد"> عدم الالتزام بمسار غير محدد</label>
+                    <label><input type="checkbox" name="violation" value="انتحال إيقاف السيارة بشكل خاطئ"> انتحال إيقاف السيارة بشكل خاطئ</label>
+                    <label><input type="checkbox" name="violation" value="إغلاق الطرق"> إغلاق الطرق</label>
+                </div>
+                
+                <div class="form-group">
+                    <label>ملاحظات إضافية:</label>
+                    <textarea id="violationNotes" rows="3"></textarea>
+                </div>
+                
+                <button onclick="saveViolations()">حفظ المخالفات</button>
+            </div>
+
+            <!-- عرض معلومات الشخص المبحوث عنه -->
+            <div id="searchResults" class="person-details hidden">
+                <h3>معلومات الشخص</h3>
+                <div class="person-info">
+                    <p><strong>الاسم:</strong> <span id="personName"></span></p>
+                    <p><strong>رقم الهوية:</strong> <span id="personId"></span></p>
+                    <p><strong>تاريخ التسجيل:</strong> <span id="registrationDate"></span></p>
+                </div>
+
+                <div class="violations-list">
+                    <h4>المخالفات المسجلة:</h4>
+                    <ul id="violationsList"></ul>
+                </div>
+
+                <div class="notes-section">
+                    <h4>ملاحظات:</h4>
+                    <p id="personNotes"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة المسجلين -->
+        <div id="registeredList" class="search-form hidden">
+            <h3>قائمة المسجلين</h3>
+            <ul id="registeredCitizens" style="list-style-type: none; padding: 0;">
+                <!-- عرض المسجلين بشكل مرتب -->
+            </ul>
+            <button onclick="hideRegisteredList()">إغلاق القائمة</button>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 20px; font-size: 1.2em; color: var(--primary-green);">
+        <p>حقوق النشر © 2023 مدينة سايبر ستي. جميع الحقوق محفوظة.</p>
+    </footer>
+
+    <script>
+        let people = [];
+
+        // محاولة تحميل البيانات من localStorage
+        try {
+            people = JSON.parse(localStorage.getItem('people')) || [];
+        } catch (error) {
+            console.error("حدث خطأ أثناء تحميل البيانات:", error);
+            alert("حدث خطأ أثناء تحميل البيانات. يرجى إعادة تحميل الصفحة.");
+        }
+
+        // رسالة ترحيبية عند دخول الموقع
+        alert('مرحباً بك بموقع المخالفات الخاص بمدينه سايبر ستي');
+
+        function showUserInterface() {
+            const userType = document.getElementById('userType').value;
+            
+            if (userType === 'vip') {
+                const password = prompt('الرجاء إدخال كلمة المرور:');
+                if (password === '33188') {
+                    document.getElementById('vipView').classList.remove('hidden');
+                    document.getElementById('citizenView').classList.add('hidden');
+                    document.getElementById('registrationView').classList.add('hidden');
+                    document.getElementById('userTypeSelection').classList.add('hidden');
+                } else {
+                    alert('كلمة المرور غير صحيحة');
+                    document.getElementById('userType').value = '';
+                }
+            } else if (userType === 'normal') {
+                document.getElementById('registrationView').classList.add('hidden');
+                document.getElementById('vipView').classList.add('hidden');
+                document.getElementById('citizenView').classList.add('hidden');
+                document.getElementById('userTypeSelection').classList.add('hidden');
+                promptCitizenLogin(); // طلب تسجيل الدخول للمواطن
+            }
+        }
+
+        function showRegistrationView() {
+            const password = prompt('الرجاء إدخال كلمة المرور للتسجيل:');
+            if (password === 'EELJJL91LHY') {
+                document.getElementById('registrationView').classList.remove('hidden');
+            } else {
+                alert('كلمة المرور غير صحيحة.');
+            }
+        }
+
+        function hideRegistrationView() {
+            document.getElementById('registrationView').classList.add('hidden');
+        }
+
+        function registerCitizen() {
+            const name = document.getElementById('newCitizenName').value;
+            const id = document.getElementById('newCitizenId').value;
+
+            if (!name || !id) {
+                alert('الرجاء إدخال جميع البيانات المطلوبة.');
+                return;
+            }
+
+            // التحقق من عدم وجود الشخص مسبقاً
+            if (people.find(p => p.id === id)) {
+                alert('رقم الهوية مسجل مسبقاً.');
+                return;
+            }
+
+            const newCitizen = {
+                name: name,
+                id: id,
+                violations: [],
+                notes: '',
+                dateAdded: new Date().toLocaleDateString()
+            };
+
+            people.push(newCitizen);
+            localStorage.setItem('people', JSON.stringify(people));
+            alert('تم التسجيل بنجاح.');
+
+            // إعادة تعيين الحقول
+            document.getElementById('newCitizenName').value = '';
+            document.getElementById('newCitizenId').value = '';
+            hideRegistrationView(); // إخفاء واجهة التسجيل بعد التسجيل
+        }
+
+        function showRegisteredCitizens() {
+            const password = prompt('الرجاء إدخال كلمة المرور لعرض المسجلين:');
+            if (password === 'EELJJL91LHY') {
+                const registeredCitizens = document.getElementById('registeredCitizens');
+                registeredCitizens.innerHTML = ''; // مسح القائمة السابقة
+
+                people.forEach(person => {
+                    const li = document.createElement('li');
+                    li.textContent = `الاسم: ${person.name}, رقم الهوية: ${person.id}`;
+                    registeredCitizens.appendChild(li);
+                });
+
+                document.getElementById('registeredList').classList.remove('hidden'); // إظهار قائمة المسجلين
+            } else {
+                alert('كلمة المرور غير صحيحة.');
+            }
+        }
+
+        function hideRegisteredList() {
+            document.getElementById('registeredList').classList.add('hidden'); // إخفاء قائمة المسجلين
+        }
+
+        function promptCitizenLogin() {
+            const name = prompt('الرجاء إدخال اسمك الكامل:');
+            const id = prompt('الرجاء إدخال رقم هويتك:');
+            showCitizenInfo(name, id);
+        }
+
+        function showCitizenInfo(name, id) {
+            const person = people.find(p => p.name.trim() === name.trim() && p.id === id.trim()); // استخدام trim لإزالة المسافات
+            if (person) {
+                document.getElementById('citizenName').textContent = person.name;
+                document.getElementById('citizenId').textContent = person.id;
+                document.getElementById('citizenRegDate').textContent = person.dateAdded;
+                document.getElementById('citizenViolations').innerHTML = person.violations.map(v => `<li>${v}</li>`).join('');
+                document.getElementById('citizenNotes').textContent = person.notes || '';
+                document.getElementById('citizenView').classList.remove('hidden');
+            } else {
+                alert('لم يتم العثور على معلوماتك. تأكد من إدخال الاسم ورقم الهوية بشكل صحيح.');
+            }
+        }
+
+        function searchPerson() {
+            const name = document.getElementById('searchName').value;
+            const id = document.getElementById('searchId').value;
+            const person = people.find(p => p.id === id.trim() && p.name.trim() === name.trim());
+            
+            if (person) {
+                document.getElementById('personName').textContent = person.name;
+                document.getElementById('personId').textContent = person.id;
+                document.getElementById('registrationDate').textContent = person.dateAdded;
+                document.getElementById('violationsList').innerHTML = person.violations.map(v => `<li>${v}</li>`).join('');
+                document.getElementById('personNotes').textContent = person.notes || '';
+                document.getElementById('searchResults').classList.remove('hidden');
+                document.getElementById('violationsForm').classList.remove('hidden'); // إظهار نموذج إضافة المخالفات
+            } else {
+                alert('لم يتم العثور على الشخص.');
+            }
+        }
+
+        function saveViolations() {
+            const id = document.getElementById('searchId').value;
+            const checkboxes = document.querySelectorAll('input[name="violation"]:checked');
+            const notes = document.getElementById('violationNotes').value;
+            
+            const personIndex = people.findIndex(p => p.id === id);
+            
+            if (personIndex !== -1) {
+                let currentViolations = people[personIndex].violations || [];
+                let newViolations = Array.from(checkboxes).map(cb => cb.value);
+                let allViolations = [...new Set([...currentViolations, ...newViolations])];
+                
+                people[personIndex].violations = allViolations;
+                people[personIndex].notes = notes;
+                
+                localStorage.setItem('people', JSON.stringify(people));
+                
+                alert('تم حفظ المخالفات بنجاح');
+                updatePersonDisplay(people[personIndex]);
+            }
+        }
+
+        function updatePersonDisplay(person) {
+            document.getElementById('personName').textContent = person.name;
+            document.getElementById('personId').textContent = person.id;
+            document.getElementById('registrationDate').textContent = person.dateAdded;
+            
+            const violationsList = document.getElementById('violationsList');
+            violationsList.innerHTML = '';
+            if (person.violations && person.violations.length > 0) {
+                person.violations.forEach(violation => {
+                    const li = document.createElement('li');
+                    li.textContent = violation;
+                    violationsList.appendChild(li);
+                });
+            }
+            
+            document.getElementById('personNotes').textContent = person.notes || '';
+        }
+    </script>
+</body>
+</html>
